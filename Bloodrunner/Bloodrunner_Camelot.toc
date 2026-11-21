@@ -1,0 +1,14 @@
+## Interface: 16001
+## Title: Bloodrunner
+## Notes: Blood of Heroes farm routes for WoW: Forever.
+## Author: gusen
+## Version: 1.4.9
+## SavedVariables: BloodRouteDB
+## DefaultState: enabled
+
+Spawns.lua
+Route.lua
+Scanner.lua
+MapPins.lua
+Arrow.lua
+Core.lua

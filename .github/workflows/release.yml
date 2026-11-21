@@ -1,0 +1,61 @@
+name: Package addon
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run Forever and Classic smoke tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y luajit
+          luajit tests/forever_smoke.lua
+          luajit tests/forever_smoke.lua classic
+
+      - name: Build and verify addon ZIP
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            python3 tools/package.py "$GITHUB_REF_NAME"
+          else
+            python3 tools/package.py
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: Bloodrunner-forever
+          path: dist/*.zip
+          if-no-files-found: error
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: Bloodrunner-forever
+          path: dist
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME"
+          "dist/Bloodrunner-${GITHUB_REF_NAME}-forever.zip"
+          --verify-tag --generate-notes

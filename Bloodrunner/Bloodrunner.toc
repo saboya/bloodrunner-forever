@@ -1,0 +1,17 @@
+## Interface: 11509
+## Interface-Vanilla: 11509
+## Interface-Classic: 11509
+## Title: Bloodrunner
+## Notes: EPL routes around mountains (north→east→south); auto loot marks; nr labels.
+## Author: gusen
+## OptionalDeps: HereBeDragons, RXPGuides, Questie
+## Version: 1.4.8
+## SavedVariables: BloodRouteDB
+## DefaultState: enabled
+
+Spawns.lua
+Route.lua
+Scanner.lua
+MapPins.lua
+Arrow.lua
+Core.lua
