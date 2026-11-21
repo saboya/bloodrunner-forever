@@ -387,6 +387,7 @@ f:SetScript("OnEvent", function(_, event, ...)
     EnsureDB()
     if BR.StartScanner then BR:StartScanner() end
     if BR.SetupMapHooks then BR:SetupMapHooks() end
+    if BR.SetupMinimap then BR:SetupMinimap() end
     local hbd = BR.GetHBD and BR:GetHBD()
     Print("Loaded. Nav: " .. (hbd and "|cff00ff00HereBeDragons|r" or "Blizzard map") .. "  ·  /br start")
     return

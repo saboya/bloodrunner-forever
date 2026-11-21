@@ -4,7 +4,7 @@ BloodRoute = BloodRoute or {}
 local BR = BloodRoute
 
 local PIN_SIZE = 14
-local BLOOD_OF_HEROES_ICON = 134813 -- Interface/Icons/INV_Potion_33
+BR.bloodIcon = 134813 -- Interface/Icons/INV_Potion_33
 
 local function EnsureFoundDB()
   BloodRouteDB = BloodRouteDB or {}
@@ -66,6 +66,14 @@ function BR:RecordChecked(node)
   self:RecordSpawn(node, "checked")
 end
 
+function BR:RemoveFound(node)
+  local db = EnsureFoundDB()
+  local key = self:SpawnStorageKey(node.uiMapID, node.x, node.y)
+  if not db[key] or db[key].kind ~= "found" then return end
+  db[key] = nil
+  self:RefreshMapPins()
+end
+
 function BR:ClearFound(kind)
   local db = EnsureFoundDB()
   if not kind then
@@ -105,12 +113,18 @@ local function AcquirePin(self)
   self:CreateMapPinTemplate()
   local pin = table.remove(self._pinPool)
   if not pin then
-    pin = CreateFrame("Frame", nil, nil)
+    pin = CreateFrame("Button", nil, nil)
     pin:SetSize(PIN_SIZE, PIN_SIZE)
     pin.tex = pin:CreateTexture(nil, "OVERLAY")
     pin.tex:SetAllPoints()
-    pin.tex:SetTexture(BLOOD_OF_HEROES_ICON)
+    pin.tex:SetTexture(BR.bloodIcon)
     pin:EnableMouse(true)
+    pin:RegisterForClicks("RightButtonUp")
+    pin:SetScript("OnClick", function(f, button)
+      if button ~= "RightButton" or not f.data then return end
+      GameTooltip:Hide()
+      BR:RemoveFound(f.data)
+    end)
     pin:SetScript("OnEnter", function(f)
       GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
       local d = f.data
@@ -122,6 +136,7 @@ local function AcquirePin(self)
       end
       GameTooltip:AddLine(string.format("%.1f, %.1f", d.x, d.y), 1, 1, 1)
       if d.zoneName then GameTooltip:AddLine(d.zoneName, 0.7, 0.7, 0.7) end
+      GameTooltip:AddLine("Right-click to remove this pin.", 0.8, 0.8, 0.8)
       GameTooltip:Show()
     end)
     pin:SetScript("OnLeave", function() GameTooltip:Hide() end)

@@ -2,7 +2,7 @@
 ## Title: Bloodrunner
 ## Notes: Blood of Heroes farm routes for WoW: Forever.
 ## Author: gusen
-## Version: 1.4.9
+## Version: 1.4.10
 ## SavedVariables: BloodRouteDB
 ## DefaultState: enabled
 
@@ -11,4 +11,5 @@ Route.lua
 Scanner.lua
 MapPins.lua
 Arrow.lua
+Minimap.lua
 Core.lua

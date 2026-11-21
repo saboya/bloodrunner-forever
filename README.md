@@ -8,6 +8,10 @@ In WoWUp, select **WoW Forever → Get Addons → Install from URL** and paste `
 
 For manual installation, download `Bloodrunner-v<version>-forever.zip` from [GitHub Releases](https://github.com/saboya/bloodrunner-forever/releases), not GitHub's automatic source archive. Extract it into `World of Warcraft/_forever_/Interface/AddOns/` so the manifest is at `Interface/AddOns/Bloodrunner/Bloodrunner.toc`. Restart WoW if this is a new installation. If updating an earlier manual port, replace the old addon directory rather than merging it, so its old `Bloodrunner_Camelot.toc` doesn't take precedence. SavedVariables live separately under `WTF`.
 
+## Use
+
+Left-click the Blood of Heroes icon on the minimap to open the command menu, or right-click it to start a fresh EPL + WPL route (`/br start`). Drag it to move it around the minimap. On the **world map**, right-click a Bloodrunner FOUND pin to remove only that pin. This doesn't reset loot counts or add the stop back to a route already in progress.
+
 | Command | What it does |
 | --- | --- |
 | `/br start` | Start an EPL + WPL route. |

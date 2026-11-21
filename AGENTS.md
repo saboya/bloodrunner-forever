@@ -17,6 +17,7 @@ Bloodrunner (BloodRoute in chat) is a Blood of Heroes farming-route addon for Ea
 | `Bloodrunner/Scanner.lua` | Player coordinates, bearing and distance, world tooltip detection, and manual marks. |
 | `Bloodrunner/MapPins.lua` | FOUND/checked storage and world-map pin rendering. |
 | `Bloodrunner/Arrow.lua` | Directional arrow, distance labels, skip button, and auto-arrival. |
+| `Bloodrunner/Minimap.lua` | Draggable minimap button and native menu that delegates actions to `/br`. |
 | `Bloodrunner/Core.lua` | Slash commands, saved data defaults, route lifecycle, and loot events. |
 | `tests/forever_smoke.lua` | Mock WoW client that loads files in manifest order and exercises the main flows. |
 | `tools/package.py` | Validate the tag and Forever manifest and build the install ZIP. |
@@ -27,6 +28,7 @@ Bloodrunner (BloodRoute in chat) is a Blood of Heroes farming-route addon for Ea
 - Arrival or skip checks off a stop; only a matching world-object mouseover, your own loot, or `/br mark` creates a FOUND pin.
 - Prefer unfinished stops in the current farm zone and retarget when crossing between EPL and WPL. Don't compare raw percentages across zones as if they shared a coordinate system.
 - Starting a new route clears checked progress, not FOUND pins or lifetime loot counters. `/br stop` leaves detection on; `/br quit` shuts it off and suspends loot tracking until `/br start`.
+- Right-clicking a FOUND pin removes only that saved record, not loot counts or current route progress. The minimap button stays available after `/br quit` so the user can restart from the menu.
 - Forever navigation is standalone. Keep HereBeDragons optional on Classic and handle missing or restricted client data without inventing a bearing.
 
 ## What changed for Forever
@@ -54,7 +56,7 @@ luajit tests/forever_smoke.lua
 luajit tests/forever_smoke.lua classic
 find Bloodrunner tests -name '*.lua' -exec luac -p '{}' \;
 python3 tools/package.py
-unzip -t dist/Bloodrunner-v1.4.9-forever.zip
+unzip -t dist/Bloodrunner-v1.4.10-forever.zip
 ```
 
 Both smoke-test modes, Lua syntax checks, and ZIP integrity passed at the port handoff. The tests cover coordinate conversion, arrow bearings, auto-arrival, cross-zone retargeting, manual marking, Forever object-tooltip filtering, map pins, loot tracking, and quit/restart. They do not prove the live client behaves like the mocks.

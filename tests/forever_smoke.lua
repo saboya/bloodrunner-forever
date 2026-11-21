@@ -21,6 +21,7 @@ function methods:Show() self.shown = true end
 function methods:Hide() self.shown = false end
 function methods:IsShown() return self.shown end
 function methods:SetText(text) self.text = text end
+function methods:GetText() return self.text end
 function methods:SetTexture(texture) self.textureID = texture end
 function methods:SetRotation(angle) self.angle = angle end
 function methods:SetPoint(...) self.point = { ... } end
@@ -34,15 +35,49 @@ methods.CreateFontString = widget
 for _, name in ipairs({ "SetAllPoints", "SetSize", "EnableMouse", "RegisterForDrag", "RegisterForClicks",
   "SetClampedToScreen", "SetMovable", "SetNormalTexture", "SetPushedTexture", "SetHighlightTexture",
   "SetFrameStrata", "SetFrameLevel", "SetTextColor", "SetJustifyH", "SetVertexColor",
-  "SetParent", "ClearAllPoints" }) do methods[name] = noop end
+  "SetParent", "ClearAllPoints", "HighlightText", "SetFocus" }) do methods[name] = noop end
 function methods:GetFrameLevel() return 1 end
 
 CreateFrame = widget
 UIParent = widget()
+Minimap = widget()
 GameTooltip = widget()
 GameTooltip:Hide()
 DEFAULT_CHAT_FRAME = { AddMessage = function(_, msg) messages[#messages + 1] = msg end }
 SlashCmdList = {}
+StaticPopupDialogs = {}
+local popup
+StaticPopup_Show = function(name, _, _, data)
+  local dialog = widget()
+  if classic then
+    dialog.editBox = widget()
+  else
+    local box = widget()
+    dialog.GetEditBox = function() return box end
+  end
+  local info = assert(StaticPopupDialogs[name])
+  popup = { dialog = dialog, accept = function() info.OnAccept(dialog, data) end }
+  if info.OnShow then info.OnShow(dialog) end
+end
+local menu
+local function menuItem(action)
+  local item = { action = action }
+  function item:CreateTitle() end
+  function item:CreateButton(label, callback)
+    self[label] = menuItem(callback)
+    return self[label]
+  end
+  function item:CreateCheckbox(label, selected, callback)
+    local entry = self:CreateButton(label, callback)
+    entry.selected = selected
+    return entry
+  end
+  return item
+end
+MenuUtil = { CreateContextMenu = function(owner, build)
+  menu = menuItem()
+  build(owner, menu)
+end }
 Enum = { TooltipDataType = { Item = 0, Object = 4 } }
 C_TooltipInfo = { GetWorldCursor = function() return GameTooltip.data end }
 GetPlayerFacing = function() return facing end
@@ -97,6 +132,20 @@ close(eraX, 7.1)
 close(eraY, 50.7)
 
 event("PLAYER_LOGIN")
+local minimap = assert(BR.minimapButton)
+minimap:GetScript("OnClick")(minimap, "LeftButton")
+local scanner = menu.Options["Mouseover scanner"]
+assert(scanner.selected())
+scanner.action()
+assert(not scanner.selected())
+scanner.action()
+menu.Options["Set scan range…"].action()
+local box = classic and popup.dialog.editBox or popup.dialog:GetEditBox()
+assert(box:GetText() == "20")
+box:SetText("25")
+popup.accept()
+assert(BloodRouteDB.scanYards == 25)
+br("range 20")
 WorldMapFrame = widget()
 WorldMapFrame.canvas = widget()
 WorldMapFrame.map = map
@@ -115,7 +164,7 @@ close(distance, 43)
 C_Map.GetWorldPosFromMapPos = native
 
 x, y = epl.x, epl.y
-br("start")
+menu["Start route"]["Both Plaguelands"].action()
 assert(BR.route[1].nr == 1 and BR.route[1].uiMapID == 1423)
 assert(#BR._activePins == 0)
 facing = nil -- Distance and auto-arrival still work without a heading.
@@ -161,12 +210,31 @@ event("CHAT_MSG_LOOT", "Someone receives loot: " .. link .. ".")
 assert(BR:GetBloodsLooted() == 0)
 event("CHAT_MSG_LOOT", "You receive loot: " .. link .. "x2.")
 assert(BR:GetBloodsLooted() == 2 and BR:GetSpawnLootCount(wpl) == 2)
-br("clearfound")
+local other = BR:CollectPoints("wpl")[2]
+BR:RecordFound(other)
+assert(#BR._activePins == 2)
+for _, pin in ipairs(BR._activePins) do
+  if pin.data.x == wpl.x and pin.data.y == wpl.y then
+    local click = pin:GetScript("OnClick")
+    click(pin, "LeftButton")
+    assert(#BR._activePins == 2)
+    click(pin, "RightButton")
+    break
+  end
+end
+assert(#BR._activePins == 1 and BR._activePins[1].data.x == other.x)
+assert(not BR:IsSpawnAlreadyLogged(wpl) and BR:IsSpawnAlreadyLogged(other))
+assert(BR:GetSpawnLootCount(wpl) == 2 and BR:GetBloodsLooted() == 2)
+menu["Clear saved data"]["Clear FOUND pins"].action()
+assert(#BR._activePins == 1)
+popup.accept()
 assert(#BR._activePins == 0)
 br("quit")
 event("CHAT_MSG_LOOT", "You receive loot: " .. link .. ".")
 assert(BR.disabled and not BR._scanFrame and BR:GetBloodsLooted() == 2)
-br("start")
+local previousMenu = menu
+minimap:GetScript("OnClick")(minimap, "RightButton")
 assert(BR.active and BR._scanFrame and BR.arrow:GetScript("OnUpdate"))
+assert(BloodRouteDB.mode == "both" and menu == previousMenu)
 
 print((classic and "Classic" or "Forever") .. " smoke test passed")
